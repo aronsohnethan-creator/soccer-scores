@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soccer Scores</title>
+    <title>PitchSide</title>
     <style>
         :root {
             --bg-primary: #0f1923;
@@ -33,25 +33,33 @@
 
         header {
             background: var(--bg-secondary);
-            padding: 20px 0;
-            border-bottom: 2px solid var(--accent);
+            padding: 32px 0 24px;
+            border-bottom: 3px solid var(--accent);
             text-align: center;
             position: relative;
             transition: background 0.3s;
         }
 
         header h1 {
-            font-size: 1.8rem;
+            font-size: 3rem;
             color: var(--text-primary);
-            letter-spacing: 1px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-weight: 900;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.4), 0 0 40px color-mix(in srgb, var(--accent) 20%, transparent);
         }
 
-        header h1 span { color: var(--accent); }
+        header h1 span {
+            color: var(--accent);
+            text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 40%, transparent);
+        }
 
         .subtitle {
             color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-top: 4px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
         .settings-btn {
@@ -689,28 +697,35 @@
         .leaders-category {
             display: flex;
             justify-content: center;
-            gap: 4px;
             padding: 0 24px 12px;
-            flex-wrap: wrap;
         }
 
-        .leaders-category button {
-            padding: 6px 16px;
+        .leaders-select {
+            padding: 8px 32px 8px 14px;
             background: var(--bg-input);
-            border: none;
-            color: var(--text-muted);
-            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
             font-weight: 600;
-            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238899aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            transition: border-color 0.2s;
         }
 
-        .leaders-category button:hover { color: #ccc; }
+        .leaders-select:hover,
+        .leaders-select:focus {
+            border-color: var(--accent);
+        }
 
-        .leaders-category button.active {
-            background: var(--accent);
-            color: var(--bg-primary);
+        .leaders-select option {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
         }
 
         .leader-card {
@@ -801,6 +816,124 @@
         .leader-per-game {
             font-size: 0.65rem;
             color: var(--text-dim);
+        }
+
+        .fav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            padding: 2px 4px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .fav-btn:hover { color: #ffd700; transform: scale(1.2); }
+        .fav-btn.active { color: #ffd700; }
+
+        .fav-section {
+            margin-bottom: 24px;
+        }
+
+        .fav-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 24px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 24px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .fav-item:last-child { border-bottom: none; }
+        .fav-item:hover { background: var(--bg-hover); }
+
+        .fav-item img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .fav-item-info {
+            flex: 1;
+        }
+
+        .fav-item-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .fav-item-meta {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .fav-remove {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+
+        .fav-remove:hover { color: #ff5252; }
+
+        .fav-empty {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+        }
+
+        .fav-empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .fav-empty p {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .fav-empty .hint {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .fav-matches-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .fav-matches-team {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .fav-matches-team img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
         }
 
         .modal-overlay {
@@ -1368,7 +1501,7 @@
 </head>
 <body>
     <header>
-        <h1>&#9917; <span>Soccer</span> Scores</h1>
+        <h1>&#9917; <span>Pitch</span>Side</h1>
         <div class="subtitle">World Cup &middot; Champions League &middot; Premier League &middot; La Liga &middot; Bundesliga &middot; Serie A &middot; Ligue 1 &middot; Euros</div>
         <div class="volume-slider" id="volume-slider">
             <span class="volume-label" id="volume-label">50%</span>
@@ -1403,6 +1536,7 @@
         <button class="tab active" data-tab="live">Live / Recent</button>
         <button class="tab" data-tab="results">Last Results</button>
         <button class="tab" data-tab="upcoming">Upcoming</button>
+        <button class="tab" data-tab="favourites">Favourites</button>
         <button class="tab" data-tab="standings">Standings</button>
         <button class="tab" data-tab="leaders">Leaders</button>
     </div>
@@ -1634,6 +1768,30 @@
             }
 
             let html = '';
+
+            // Pin favourite teams' matches to the top
+            const favTeamNames = new Set(getFavTeams().map(t => t.name));
+            if (favTeamNames.size > 0) {
+                let pinned = [];
+                for (const [code, league] of entries) {
+                    for (const m of league.matches) {
+                        if (favTeamNames.has(m.home) || favTeamNames.has(m.away)) {
+                            pinned.push({ ...m, _leagueCode: code });
+                        }
+                    }
+                }
+                if (pinned.length > 0) {
+                    html += `
+                        <div class="league-section">
+                            <div class="league-header">&#9733; Your Teams</div>
+                            <div class="match-list">
+                                ${pinned.map(renderMatch).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
             for (const [code, league] of entries) {
                 const matches = league.matches.map(m => ({ ...m, _leagueCode: code }));
                 html += `
@@ -1863,12 +2021,12 @@
         }
 
         function buildCategoryHtml() {
-            let html = '<div class="leaders-category">';
+            let html = '<div class="leaders-category"><select class="leaders-select" onchange="selectCategory(this.value)">';
             for (const cat of LEADER_CATEGORIES) {
-                const cls = cat.id === leadersCategory ? 'active' : '';
-                html += `<button class="${cls}" onclick="selectCategory('${cat.id}')">${cat.icon} ${cat.label}</button>`;
+                const sel = cat.id === leadersCategory ? 'selected' : '';
+                html += `<option value="${cat.id}" ${sel}>${cat.label}</option>`;
             }
-            html += '</div>';
+            html += '</select></div>';
             return html;
         }
 
@@ -1901,11 +2059,13 @@
 
             const perGame = entry.played > 0 ? (entry.goals / entry.played).toFixed(2) : '0';
 
+            const playerObj = { name: entry.name, team: entry.team, crest: entry.crest, nationality: entry.nationality };
+
             return `<div class="leader-card">
                 <span class="leader-rank ${rankClass}">${rank}</span>
                 ${crest}
                 <div class="leader-info">
-                    <div class="leader-name">${escapeHtml(entry.name)}</div>
+                    <div class="leader-name">${escapeHtml(entry.name)} ${favPlayerBtnHtml(playerObj)}</div>
                     <div class="leader-meta">${escapeHtml(entry.team)} &middot; ${escapeHtml(entry.position || '')} &middot; ${escapeHtml(entry.nationality || '')}</div>
                 </div>
                 <div class="leader-stats-row">
@@ -1997,9 +2157,156 @@
             renderLeaders();
         }
 
+        // Favourites
+        function getFavTeams() {
+            try { return JSON.parse(localStorage.getItem('fav-teams') || '[]'); } catch { return []; }
+        }
+        function getFavPlayers() {
+            try { return JSON.parse(localStorage.getItem('fav-players') || '[]'); } catch { return []; }
+        }
+        function saveFavTeams(teams) { localStorage.setItem('fav-teams', JSON.stringify(teams)); }
+        function saveFavPlayers(players) { localStorage.setItem('fav-players', JSON.stringify(players)); }
+
+        function isTeamFav(teamId) { return getFavTeams().some(t => t.id === teamId); }
+        function isPlayerFav(name) { return getFavPlayers().some(p => p.name === name); }
+
+        function toggleFavTeam(team, e) {
+            if (e) e.stopPropagation();
+            let teams = getFavTeams();
+            if (teams.some(t => t.id === team.id)) {
+                teams = teams.filter(t => t.id !== team.id);
+            } else {
+                teams.push({ id: team.id, name: team.name || team.short, short: team.short || team.name, crest: team.crest || '', league: team.league || '' });
+            }
+            saveFavTeams(teams);
+            if (activeTab === 'favourites') renderFavourites();
+        }
+
+        function toggleFavPlayer(player, e) {
+            if (e) e.stopPropagation();
+            let players = getFavPlayers();
+            if (players.some(p => p.name === player.name)) {
+                players = players.filter(p => p.name !== player.name);
+            } else {
+                players.push({ name: player.name, team: player.team || '', crest: player.crest || '', nationality: player.nationality || '' });
+            }
+            saveFavPlayers(players);
+            if (activeTab === 'favourites') renderFavourites();
+        }
+
+        function favTeamBtnHtml(team, size) {
+            const active = isTeamFav(team.id) ? 'active' : '';
+            const teamJson = JSON.stringify(team).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            return `<button class="fav-btn ${active}" onclick="toggleFavTeam(JSON.parse(this.dataset.team), event)" data-team="${teamJson}" title="Favourite">&#9733;</button>`;
+        }
+
+        function favPlayerBtnHtml(player) {
+            const active = isPlayerFav(player.name) ? 'active' : '';
+            const pJson = JSON.stringify(player).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+            return `<button class="fav-btn ${active}" onclick="toggleFavPlayer(JSON.parse(this.dataset.player), event)" data-player="${pJson}" title="Favourite">&#9733;</button>`;
+        }
+
+        async function renderFavourites() {
+            const app = document.getElementById('app');
+            const teams = getFavTeams();
+            const players = getFavPlayers();
+
+            if (teams.length === 0 && players.length === 0) {
+                app.innerHTML = `<div class="fav-empty">
+                    <div class="fav-empty-icon">&#9733;</div>
+                    <p>No favourites yet</p>
+                    <div class="hint">Search for a team or check the Leaders tab to add favourites.<br>
+                    Use the star button next to any team or player.</div>
+                </div>`;
+                return;
+            }
+
+            let html = '';
+
+            if (teams.length > 0) {
+                // Show live/recent matches for fav teams
+                const matchData = cache['live'] || cache['matches'];
+                if (matchData) {
+                    const teamNames = new Set(teams.map(t => t.name));
+                    let liveMatches = [];
+                    for (const [code, league] of Object.entries(matchData)) {
+                        for (const m of league.matches) {
+                            if (teamNames.has(m.home) || teamNames.has(m.away)) {
+                                liveMatches.push({ ...m, _leagueCode: code });
+                            }
+                        }
+                    }
+                    if (liveMatches.length > 0) {
+                        html += '<div class="fav-section"><div class="fav-section-title">Your Teams Today</div>';
+                        html += `<div class="match-list">${liveMatches.map(renderMatch).join('')}</div></div>`;
+                    }
+                }
+
+                // Load next match + last result for each favourite team
+                html += '<div class="fav-section"><div class="fav-section-title">Favourite Teams</div>';
+                for (const team of teams) {
+                    const crest = team.crest ? `<img src="${encodeURI(team.crest)}" alt="" loading="lazy">` : '';
+                    const teamCacheKey = `team_${team.id}`;
+                    const teamMatches = cache[teamCacheKey];
+
+                    let scheduleHtml = '';
+                    if (teamMatches && teamMatches.length > 0) {
+                        const now = new Date().toISOString();
+                        const lastResult = [...teamMatches].reverse().find(m => m.status === 'FINISHED');
+                        const nextMatch = teamMatches.find(m => m.status === 'TIMED' || m.status === 'SCHEDULED');
+
+                        if (lastResult) {
+                            scheduleHtml += `<div class="fav-item-meta" style="margin-top:4px">Last: ${escapeHtml(lastResult.home_short || lastResult.home)} ${lastResult.home_score}-${lastResult.away_score} ${escapeHtml(lastResult.away_short || lastResult.away)}</div>`;
+                        }
+                        if (nextMatch) {
+                            const d = new Date(nextMatch.utc_date);
+                            const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                            scheduleHtml += `<div class="fav-item-meta">Next: ${escapeHtml(nextMatch.home_short || nextMatch.home)} vs ${escapeHtml(nextMatch.away_short || nextMatch.away)} (${dateStr})</div>`;
+                        }
+                    } else if (teamMatches === undefined) {
+                        scheduleHtml = '<div class="fav-item-meta" style="color:var(--text-dim)">Loading schedule...</div>';
+                        fetch(`/api/team/${team.id}/matches`).then(r => r.ok ? r.json() : []).then(data => {
+                            cache[teamCacheKey] = data;
+                            if (activeTab === 'favourites') renderFavourites();
+                        }).catch(() => {});
+                    }
+
+                    html += `<div class="fav-item" onclick="openTeam(${team.id})">
+                        ${crest}
+                        <div class="fav-item-info">
+                            <div class="fav-item-name">${escapeHtml(team.short || team.name)}</div>
+                            <div class="fav-item-meta">${escapeHtml(team.league || '')}</div>
+                            ${scheduleHtml}
+                        </div>
+                        <button class="fav-remove" onclick="toggleFavTeam({id:${team.id}}, event)" title="Remove">&#10005;</button>
+                    </div>`;
+                }
+                html += '</div>';
+            }
+
+            // Favourite players
+            if (players.length > 0) {
+                html += '<div class="fav-section"><div class="fav-section-title">Favourite Players</div>';
+                for (const player of players) {
+                    const crest = player.crest ? `<img src="${encodeURI(player.crest)}" alt="" loading="lazy">` : '';
+                    html += `<div class="fav-item">
+                        ${crest}
+                        <div class="fav-item-info">
+                            <div class="fav-item-name">${escapeHtml(player.name)}</div>
+                            <div class="fav-item-meta">${escapeHtml(player.team)}${player.nationality ? ' &middot; ' + escapeHtml(player.nationality) : ''}</div>
+                        </div>
+                        <button class="fav-remove" onclick="toggleFavPlayer({name:'${escapeHtml(player.name)}'}, event)" title="Remove">&#10005;</button>
+                    </div>`;
+                }
+                html += '</div>';
+            }
+
+            app.innerHTML = html;
+        }
+
         function updateRefreshBar() {
             const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('refresh-bar').textContent = `Last updated: ${now} · Auto-refreshes every 60s`;
+            document.getElementById('refresh-bar').textContent = `Last updated: ${now} · Auto-refreshes every 15s`;
         }
 
         async function loadTab(tab) {
@@ -2013,6 +2320,7 @@
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 const data = await resp.json();
                 cache[tab] = data;
+                if (tab === 'live') checkFavNotifications(data);
                 if (activeTab === tab && !viewingTeam) {
                     render(data, tab);
                     updateRefreshBar();
@@ -2034,7 +2342,9 @@
                 document.querySelector('.tab.active').classList.remove('active');
                 btn.classList.add('active');
                 activeTab = btn.dataset.tab;
-                if (activeTab === 'standings') {
+                if (activeTab === 'favourites') {
+                    renderFavourites();
+                } else if (activeTab === 'standings') {
                     renderStandings();
                     loadLeagueData(selectedLeague);
                 } else if (activeTab === 'leaders') {
@@ -2077,6 +2387,7 @@
                     ${crest}
                     <span class="search-result-name">${escapeHtml(t.short)}</span>
                     <span class="search-result-league">${escapeHtml(t.league)}</span>
+                    ${favTeamBtnHtml(t)}
                 </div>`;
             }).join('');
             searchDropdown.classList.add('open');
@@ -2137,7 +2448,7 @@
                 <button class="team-back" onclick="closeTeamView()">&#8592; Back</button>
                 <div class="team-header">
                     ${crest}
-                    <div class="team-header-name">${escapeHtml(team.short)}</div>
+                    <div class="team-header-name">${escapeHtml(team.short)} ${favTeamBtnHtml(team)}</div>
                     <div class="team-header-league">${escapeHtml(team.league)}</div>
                 </div>`;
 
@@ -2495,6 +2806,66 @@
                 modalContent.innerHTML = `<div class="error-msg"><p>Failed to load match details</p></div>`;
             }
         }
+
+        // Browser notifications for favourite teams
+        let lastNotifiedScores = {};
+
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) return;
+            if (Notification.permission === 'default') {
+                await Notification.requestPermission();
+            }
+        }
+
+        function checkFavNotifications(data) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            const favTeamNames = new Set(getFavTeams().map(t => t.name));
+            if (favTeamNames.size === 0) return;
+
+            for (const [code, league] of Object.entries(data)) {
+                for (const m of league.matches) {
+                    if (!favTeamNames.has(m.home) && !favTeamNames.has(m.away)) continue;
+
+                    const key = m.id;
+                    const scoreStr = `${m.home_score}-${m.away_score}`;
+                    const prev = lastNotifiedScores[key];
+
+                    if (m.status === 'IN_PLAY' || m.status === 'PAUSED') {
+                        if (!prev) {
+                            // Match just started
+                            new Notification('Match Started!', {
+                                body: `${m.home} vs ${m.away} is now live`,
+                                icon: m.home_crest || m.away_crest || '',
+                                tag: `match-${key}`,
+                            });
+                            lastNotifiedScores[key] = scoreStr;
+                        } else if (prev !== scoreStr && m.home_score !== null) {
+                            // Score changed = goal
+                            new Notification('GOAL!', {
+                                body: `${m.home} ${m.home_score} - ${m.away_score} ${m.away}`,
+                                icon: m.home_crest || m.away_crest || '',
+                                tag: `goal-${key}-${scoreStr}`,
+                            });
+                            lastNotifiedScores[key] = scoreStr;
+                        }
+                    } else if (m.status === 'FINISHED' && prev && prev !== 'FT') {
+                        new Notification('Full Time', {
+                            body: `${m.home} ${m.home_score} - ${m.away_score} ${m.away}`,
+                            icon: m.home_crest || m.away_crest || '',
+                            tag: `ft-${key}`,
+                        });
+                        lastNotifiedScores[key] = 'FT';
+                    }
+                }
+            }
+        }
+
+        // Request permission on first favourite
+        const _origToggleFavTeam = toggleFavTeam;
+        toggleFavTeam = function(team, e) {
+            _origToggleFavTeam(team, e);
+            requestNotificationPermission();
+        };
 
         // Audio engine
         let audioCtx = null;
@@ -2909,7 +3280,7 @@
         renderSettingsUI();
 
         loadTab('live');
-        setInterval(() => loadTab(activeTab), 60000);
+        setInterval(() => loadTab(activeTab), 15000);
     </script>
 </body>
 </html>

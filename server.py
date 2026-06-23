@@ -30,16 +30,38 @@ LEAGUE_IDS = list(LEAGUE_NAMES.keys())
 
 _cache = {}
 CACHE_TTL = 300
+CACHE_TTL_LONG = 1800  # 30 min for stable data like teams, standings
 
 # Rate limiter: max 9 requests per 60 seconds (leave 1 buffer)
 _request_times = []
 _rate_lock = threading.Lock()
 
 
-def cached(key, fetcher):
+_bg_refreshing = set()
+
+
+def cached(key, fetcher, ttl=None):
     now = time.time()
-    if key in _cache and now - _cache[key]["ts"] < CACHE_TTL:
-        return _cache[key]["data"]
+    ttl = ttl or CACHE_TTL
+    entry = _cache.get(key)
+
+    if entry and now - entry["ts"] < ttl:
+        return entry["data"]
+
+    # Cache expired but we have stale data — return it and refresh in background
+    if entry and entry["data"] is not None and key not in _bg_refreshing:
+        _bg_refreshing.add(key)
+        def bg():
+            try:
+                data = fetcher()
+                if data is not None:
+                    _cache[key] = {"data": data, "ts": time.time()}
+            finally:
+                _bg_refreshing.discard(key)
+        threading.Thread(target=bg, daemon=True).start()
+        return entry["data"]
+
+    # No cached data at all — must fetch synchronously
     data = fetcher()
     if data is not None:
         _cache[key] = {"data": data, "ts": now}
@@ -165,7 +187,7 @@ def index():
 
 @app.route("/api/matches")
 def api_matches():
-    return jsonify(cached("matches", _fetch_matches))
+    return jsonify(cached("matches", _fetch_matches, ttl=30))
 
 
 @app.route("/api/upcoming")
@@ -178,26 +200,27 @@ def api_results():
     return jsonify(cached("results", _fetch_last_results))
 
 
+def _fetch_teams():
+    teams = {}
+    for code in LEAGUE_IDS:
+        data = api_get(f"/competitions/{code}/teams")
+        if not data or data.get("_rate_limited"):
+            continue
+        for t in data.get("teams", []):
+            if t["id"] not in teams:
+                teams[t["id"]] = {
+                    "id": t["id"],
+                    "name": t["name"],
+                    "short": t.get("shortName") or t["name"],
+                    "crest": t.get("crest", ""),
+                    "league": LEAGUE_NAMES.get(code, code),
+                }
+    return sorted(teams.values(), key=lambda x: x["name"]) if teams else None
+
+
 @app.route("/api/teams")
 def api_teams():
-    def fetch():
-        teams = {}
-        for code in LEAGUE_IDS:
-            data = api_get(f"/competitions/{code}/teams")
-            if not data:
-                continue
-            for t in data.get("teams", []):
-                if t["id"] not in teams:
-                    teams[t["id"]] = {
-                        "id": t["id"],
-                        "name": t["name"],
-                        "short": t.get("shortName") or t["name"],
-                        "crest": t.get("crest", ""),
-                        "league": LEAGUE_NAMES.get(code, code),
-                    }
-        return sorted(teams.values(), key=lambda x: x["name"])
-
-    return jsonify(cached("teams", fetch))
+    return jsonify(cached("teams", _fetch_teams, CACHE_TTL_LONG) or [])
 
 
 @app.route("/api/team/<int:team_id>/matches")
@@ -517,5 +540,18 @@ def api_match_detail(match_id):
     return jsonify(result)
 
 
+def _preload():
+    """Background preload of common data on startup."""
+    with app.app_context():
+        print("[preload] Loading matches...")
+        cached("matches", _fetch_matches)
+        print("[preload] Loading teams...")
+        cached("teams", _fetch_teams, CACHE_TTL_LONG)
+        print("[preload] Done — app is ready.")
+
+
 if __name__ == "__main__":
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+        t = threading.Thread(target=_preload, daemon=True)
+        t.start()
     app.run(debug=True, port=5050)
