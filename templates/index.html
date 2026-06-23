@@ -2313,7 +2313,10 @@
             if (viewingTeam) return;
             if (!ENDPOINTS[tab]) return;
             const app = document.getElementById('app');
-            app.innerHTML = `<div class="loading"><div class="spinner"></div>Loading...</div>`;
+
+            if (!cache[tab]) {
+                app.innerHTML = `<div class="loading"><div class="spinner"></div>Loading...</div>`;
+            }
 
             try {
                 const resp = await fetch(ENDPOINTS[tab]);
@@ -2326,7 +2329,7 @@
                     updateRefreshBar();
                 }
             } catch (err) {
-                if (activeTab === tab && !viewingTeam) {
+                if (activeTab === tab && !viewingTeam && !cache[tab]) {
                     app.innerHTML = `
                         <div class="error-msg">
                             <p>Failed to load scores</p>

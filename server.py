@@ -49,7 +49,7 @@ def cached(key, fetcher, ttl=None):
         return entry["data"]
 
     # Cache expired but we have stale data — return it and refresh in background
-    if entry and entry["data"] is not None and key not in _bg_refreshing:
+    if entry and entry["data"] is not None and entry["data"] != {} and key not in _bg_refreshing:
         _bg_refreshing.add(key)
         def bg():
             try:
@@ -150,34 +150,52 @@ def _fetch_matches():
     return group_by_league(matches)
 
 
-def _fetch_competition(code):
-    """Fetch all matches for a single competition's current season."""
-    data = api_get(f"/competitions/{code}/matches")
-    if not data:
-        return []
-    return [parse_match(m) for m in data.get("matches", [])]
-
-
 def _fetch_upcoming():
-    results = {}
-    for code in LEAGUE_IDS:
-        cache_key = f"comp_{code}"
-        matches = cached(cache_key, lambda c=code: _fetch_competition(c))
-        upcoming = [m for m in matches if m["status"] in ("TIMED", "SCHEDULED")]
-        if upcoming:
-            results[code] = {"name": LEAGUE_NAMES[code], "matches": upcoming[:10]}
-    return results
+    """Upcoming matches — single API call with date range."""
+    today = datetime.utcnow().date()
+    date_from = today.isoformat()
+    date_to = (today + timedelta(days=10)).isoformat()
+
+    data = api_get("/matches", {"dateFrom": date_from, "dateTo": date_to})
+    if not data or data.get("_rate_limited"):
+        return {}
+
+    matches = []
+    for m in data.get("matches", []):
+        code = m.get("competition", {}).get("code")
+        if code in LEAGUE_NAMES and m.get("status") in ("TIMED", "SCHEDULED"):
+            parsed = parse_match(m)
+            parsed["_league"] = code
+            matches.append(parsed)
+
+    grouped = group_by_league(matches)
+    for code in grouped:
+        grouped[code]["matches"] = grouped[code]["matches"][:10]
+    return grouped
 
 
 def _fetch_last_results():
-    results = {}
-    for code in LEAGUE_IDS:
-        cache_key = f"comp_{code}"
-        matches = cached(cache_key, lambda c=code: _fetch_competition(c))
-        finished = [m for m in matches if m["status"] == "FINISHED"]
-        if finished:
-            results[code] = {"name": LEAGUE_NAMES[code], "matches": finished[-10:]}
-    return results
+    """Recent results — single API call with date range."""
+    today = datetime.utcnow().date()
+    date_from = (today - timedelta(days=10)).isoformat()
+    date_to = today.isoformat()
+
+    data = api_get("/matches", {"dateFrom": date_from, "dateTo": date_to})
+    if not data or data.get("_rate_limited"):
+        return {}
+
+    matches = []
+    for m in data.get("matches", []):
+        code = m.get("competition", {}).get("code")
+        if code in LEAGUE_NAMES and m.get("status") == "FINISHED":
+            parsed = parse_match(m)
+            parsed["_league"] = code
+            matches.append(parsed)
+
+    grouped = group_by_league(matches)
+    for code in grouped:
+        grouped[code]["matches"] = grouped[code]["matches"][-10:]
+    return grouped
 
 
 @app.route("/")
@@ -540,18 +558,5 @@ def api_match_detail(match_id):
     return jsonify(result)
 
 
-def _preload():
-    """Background preload of common data on startup."""
-    with app.app_context():
-        print("[preload] Loading matches...")
-        cached("matches", _fetch_matches)
-        print("[preload] Loading teams...")
-        cached("teams", _fetch_teams, CACHE_TTL_LONG)
-        print("[preload] Done — app is ready.")
-
-
 if __name__ == "__main__":
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
-        t = threading.Thread(target=_preload, daemon=True)
-        t.start()
     app.run(debug=True, port=5050)
