@@ -559,4 +559,7 @@ def api_match_detail(match_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5050)
+    import sys
+    port = int(os.environ.get("PORT", 5050))
+    debug = "gunicorn" not in sys.modules
+    app.run(debug=debug, host="0.0.0.0", port=port)
